@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { generatePDF } from "@/utils/pdfGenerator";
+import { useToast } from "@/components/ui/use-toast";
+import { ChecklistEntry } from "@/types/checklist";
 
 const engineCategories = {
   "Bulls D11": ["T1", "T2", "T3", "T4", "T5", "T6", "T7"],
@@ -55,6 +57,7 @@ const wiringItems = [
 ];
 
 const Checklist = () => {
+  const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     date: "",
@@ -83,8 +86,30 @@ const Checklist = () => {
 
   const handleNext = () => {
     if (step === 7) {
-      generatePDF(formData);
-      // Reset form and redirect to home
+      // Generate unique ID for the checklist
+      const checklistData = {
+        id: crypto.randomUUID(),
+        ...formData,
+      };
+      
+      // Save to localStorage
+      const existingChecklists = JSON.parse(localStorage.getItem("checklists") || "[]");
+      localStorage.setItem(
+        "checklists",
+        JSON.stringify([...existingChecklists, checklistData])
+      );
+      
+      // Generate PDF
+      generatePDF(checklistData);
+      
+      // Show success toast
+      toast({
+        title: "Checklist enregistrée",
+        description: "La checklist a été enregistrée avec succès.",
+      });
+      
+      // Redirect to history page
+      window.location.href = "/history";
       return;
     }
     setStep(step + 1);
