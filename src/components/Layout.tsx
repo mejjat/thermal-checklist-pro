@@ -23,8 +23,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           </SidebarContent>
         </Sidebar>
         <main className="flex-1 p-8">
-          <div className="mb-8 flex items-center gap-4">
-            <SidebarTrigger asChild>
+          <div className="mb-8">
+            <SidebarTrigger>
               <Button variant="outline" size="icon">
                 <Menu className="h-4 w-4" />
               </Button>
