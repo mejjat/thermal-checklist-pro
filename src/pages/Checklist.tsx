@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -157,7 +158,7 @@ const Checklist = () => {
               </div>
               
               <div>
-                <Label>Numéro de série de l'engin</Label>
+                <Label>Type d'engin</Label>
                 <Select
                   value={formData.serialNumber}
                   onValueChange={(value) => setFormData({ ...formData, serialNumber: value })}
