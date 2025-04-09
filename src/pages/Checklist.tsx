@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ChecklistEntry, ComponentStatus, REVISION_TYPES, EQUIPMENT_LIST } from "@/types/checklist";
-import { Camera, ChevronLeft, Import, Plus, Save } from "lucide-react";
+import { ChevronLeft, Plus } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { generatePDF } from "@/utils/pdfGenerator";
@@ -81,22 +80,7 @@ const Checklist = () => {
     });
   };
 
-  const handleAddPhoto = () => {
-    // In a real application, this would handle file uploads
-    // For now, we'll just add a placeholder
-    setFormData({
-      ...formData,
-      photos: [...formData.photos, "placeholder.svg"]
-    });
-    
-    toast({
-      title: "Photo ajoutée",
-      description: "La photo a été ajoutée à l'inspection.",
-    });
-  };
-
   const handleSave = () => {
-    // Validate form
     if (!formData.type || !formData.serialNumber || formData.hourCounter <= 0) {
       toast({
         title: "Formulaire incomplet",
@@ -106,29 +90,24 @@ const Checklist = () => {
       return;
     }
 
-    // Generate unique ID for the checklist
     const checklistData: ChecklistEntry = {
       id: crypto.randomUUID(),
       ...formData,
     };
     
-    // Save to localStorage
     const existingChecklists = JSON.parse(localStorage.getItem("checklists") || "[]");
     localStorage.setItem(
       "checklists",
       JSON.stringify([...existingChecklists, checklistData])
     );
     
-    // Generate PDF
     generatePDF(checklistData);
     
-    // Show success toast
     toast({
       title: "Inspection enregistrée",
       description: "L'inspection a été enregistrée avec succès et le PDF a été généré.",
     });
     
-    // Redirect to history page
     navigate("/history");
   };
 
@@ -274,30 +253,6 @@ const Checklist = () => {
                   placeholder="Notez ici vos observations..."
                   className="min-h-[150px]"
                 />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Photos</Label>
-                <div className="flex flex-wrap gap-2">
-                  {formData.photos.map((photo, index) => (
-                    <img 
-                      key={index}
-                      src={photo}
-                      alt={`Photo ${index + 1}`}
-                      className="h-20 w-20 object-cover rounded-md border"
-                    />
-                  ))}
-                </div>
-                <div className="flex gap-2 mt-2">
-                  <Button variant="outline" size="sm" onClick={handleAddPhoto}>
-                    <Camera className="mr-2 h-4 w-4" />
-                    Prendre une photo
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={handleAddPhoto}>
-                    <Import className="mr-2 h-4 w-4" />
-                    Importer
-                  </Button>
-                </div>
               </div>
               
               <div className="flex justify-between mt-8">
