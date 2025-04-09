@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { ChecklistEntry, ComponentStatus, REVISION_TYPES } from "@/types/checklist";
+import { ChecklistEntry, ComponentStatus, REVISION_TYPES, EQUIPMENT_LIST } from "@/types/checklist";
 import { Camera, ChevronLeft, Import, Plus, Save } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -179,11 +179,21 @@ const Checklist = () => {
               
               <div>
                 <Label>Numéro de série de l'engin</Label>
-                <Input
+                <Select
                   value={formData.serialNumber}
-                  onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                  placeholder="Ex: EN123456"
-                />
+                  onValueChange={(value) => setFormData({ ...formData, serialNumber: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez un engin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EQUIPMENT_LIST.map((equipment) => (
+                      <SelectItem key={equipment} value={equipment}>
+                        {equipment}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>

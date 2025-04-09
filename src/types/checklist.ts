@@ -39,3 +39,12 @@ export const REVISION_TYPES = [
   "Périodique",
   "Après panne"
 ];
+
+export const EQUIPMENT_LIST = [
+  "D11T1", "D11T2", "D11T3", "D11T4", "D11T5", "D11T6", "D11T7",
+  "D9RW1", "D9RW2", "D9RW3", "D9RW4", "D9RW5", "D9RW6", "D9RW7", 
+  "D9RW8", "D9RW9", "D9RW10", "D9RW11", "CH994F1", "CH994F2", 
+  "CH992K", "NIVKOM5", "NIVKOM6", "NIVCAT7", "NIVCAT8", "ARRCAT", 
+  "CAMGAZCAT", "VOLVOSTSRV", "PAYKOM1", "PAYKOM2", "PAYKOM3", 
+  "DAF", "DIVERS"
+];
