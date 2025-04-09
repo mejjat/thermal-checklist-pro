@@ -17,7 +17,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         <Sidebar>
           <SidebarContent className="flex flex-col gap-4 p-4">
             <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Checklist Méthode Engins
+              Checklist Bureau De Méthode
             </h2>
             <nav className="flex flex-col gap-2">
               <Button 

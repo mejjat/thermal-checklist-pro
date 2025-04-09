@@ -11,7 +11,7 @@ const Home = () => {
     <div className="container mx-auto py-10">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          Checklist Méthode Engins
+          Checklist Bureau De Méthode
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           Système de gestion et de suivi des inspections d'engins
