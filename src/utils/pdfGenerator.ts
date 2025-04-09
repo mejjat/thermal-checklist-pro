@@ -1,18 +1,17 @@
+
 import jsPDF from 'jspdf';
-import { ChecklistEntry } from '@/types/checklist';
+import { ChecklistEntry, STATUS_ICONS } from '@/types/checklist';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const getStatusColor = (status: string): [number, number, number] => {
-  switch (status.toLowerCase()) {
-    case 'neuf':
-      return [139, 92, 246]; // Purple
+  switch (status) {
     case 'bon':
-      return [15, 160, 206]; // Blue
+      return [39, 174, 96]; // Green
+    case 'moyen':
+      return [241, 196, 15]; // Yellow
     case 'mauvais':
-      return [234, 56, 76]; // Red
-    case 'manquant':
-      return [217, 70, 239]; // Pink
+      return [231, 76, 60]; // Red
     default:
       return [142, 145, 150]; // Gray
   }
@@ -21,118 +20,152 @@ const getStatusColor = (status: string): [number, number, number] => {
 export const generatePDF = (data: ChecklistEntry) => {
   const doc = new jsPDF();
   
-  // Header styling
+  // Add custom fonts and styling
   doc.setFont("helvetica", "bold");
   doc.setFontSize(24);
-  doc.setTextColor(26, 31, 44);
-  doc.text("Checklist des moteurs thermiques aux ACX", 20, 20, { align: "left" });
+  
+  // Header styling with gradient-like effect
+  doc.setFillColor(88, 86, 214); // Indigo
+  doc.rect(0, 0, 210, 40, 'F');
+  doc.setFillColor(126, 87, 194); // Purple
+  doc.rect(105, 0, 105, 40, 'F');
+  
+  // Document title
+  doc.setTextColor(255, 255, 255);
+  doc.text("Rapport d'Inspection d'Engin", 105, 20, { align: "center" });
+  doc.setFontSize(12);
+  doc.text(format(new Date(data.date), "dd MMMM yyyy", { locale: fr }), 105, 30, { align: "center" });
   
   // Basic Information
-  doc.setFontSize(14);
-  doc.setTextColor(139, 92, 246);
-  doc.text("Informations Générales", 20, 40);
+  doc.setTextColor(88, 86, 214);
+  doc.setFontSize(16);
+  doc.text("Informations Générales", 20, 60);
   
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(12);
-  doc.setTextColor(26, 31, 44);
-  doc.text(`Date du contrôle: ${format(new Date(data.date), "dd MMMM yyyy", { locale: fr })}`, 20, 50);
-  doc.text(`Type de checklist: ${data.checklistType === "reception" ? "Réception" : "Expédition"}`, 20, 60);
+  doc.setFontSize(11);
+  doc.setTextColor(60, 60, 60);
   
-  // Responsables section
-  doc.setFontSize(14);
-  doc.setTextColor(139, 92, 246);
-  doc.text("Responsables", 20, 80);
+  const infoStartY = 70;
+  const infoItems = [
+    {label: "Type de révision", value: data.type},
+    {label: "Numéro de série", value: data.serialNumber},
+    {label: "Compteur horaire", value: `${data.hourCounter} heures`}
+  ];
   
-  doc.setFontSize(12);
-  doc.setTextColor(26, 31, 44);
-  doc.text(`Électrique: ${data.responsables.electrical}`, 30, 90);
-  doc.text(`Atelier: ${data.responsables.workshop}`, 30, 100);
-  doc.text(`Inspecteur: ${data.responsables.inspector}`, 30, 110);
+  infoItems.forEach((item, index) => {
+    doc.setFont("helvetica", "bold");
+    doc.text(`${item.label}:`, 20, infoStartY + (index * 10));
+    doc.setFont("helvetica", "normal");
+    doc.text(item.value, 80, infoStartY + (index * 10));
+  });
   
-  // Engine Information
-  doc.setFontSize(14);
-  doc.setTextColor(139, 92, 246);
-  doc.text("Information Engin", 20, 130);
+  // Components section
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(88, 86, 214);
+  doc.text("État des Composants", 20, 110);
   
-  doc.setFontSize(12);
-  doc.setTextColor(26, 31, 44);
-  doc.text(`Catégorie: ${data.engineCategory}`, 30, 140);
-  doc.text(`Modèle: ${data.engineModel}`, 30, 150);
-  doc.text(`Numéro de série: ${data.engineInfo.serialNumber}`, 30, 160);
-  doc.text(`Numéro ECM: ${data.engineInfo.ecmNumber}`, 30, 170);
-  doc.text(`HM actuel: ${data.engineInfo.hmCurrent}`, 30, 180);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.setTextColor(60, 60, 60);
   
-  // Revision Information
-  doc.setFontSize(14);
-  doc.setTextColor(139, 92, 246);
-  doc.text("Révision", 20, 200);
+  // Draw components table
+  const componentStartY = 120;
+  const componentItems = [
+    {label: "Circuit d'admission", status: data.components.admission},
+    {label: "Circuit de gazoil", status: data.components.gazoil},
+    {label: "Circuit d'échappement", status: data.components.exhaust},
+    {label: "Flexibles", status: data.components.hoses},
+    {label: "Structure", status: data.components.structure},
+    {label: "Châssis", status: data.components.chassis},
+    {label: "Équipements de sécurité", status: data.components.safetyEquipment}
+  ];
   
-  doc.setFontSize(12);
-  doc.setTextColor(26, 31, 44);
-  doc.text(`Type: ${data.revision.type}`, 30, 210);
-  doc.text(`Numéro: ${data.revision.number}`, 30, 220);
-  if (data.revision.fromEngine) {
-    doc.text(`Provenance: ${data.revision.fromEngine}`, 30, 230);
-  }
+  // Draw table header
+  doc.setFillColor(246, 246, 246);
+  doc.rect(20, componentStartY - 6, 170, 10, 'F');
+  doc.setFont("helvetica", "bold");
+  doc.text("Composant", 25, componentStartY);
+  doc.text("État", 140, componentStartY);
   
-  // Add new page for sensors
-  doc.addPage();
-  doc.setFontSize(14);
-  doc.setTextColor(139, 92, 246);
-  doc.text("État des Capteurs", 20, 20);
-  
-  let y = 40;
-  Object.entries(data.sensors).forEach(([sensor, state]) => {
-    if (y > 270) {
-      doc.addPage();
-      y = 20;
+  // Draw table rows
+  componentItems.forEach((item, index) => {
+    const y = componentStartY + 10 + (index * 12);
+    
+    // Alternate row background
+    if (index % 2 === 0) {
+      doc.setFillColor(250, 250, 250);
+      doc.rect(20, y - 6, 170, 12, 'F');
     }
     
-    const statusColor = getStatusColor(state);
-    doc.setFillColor(...statusColor);
-    doc.circle(25, y - 1, 2, 'F');
+    doc.setFont("helvetica", "normal");
+    doc.text(item.label, 25, y);
     
-    doc.setFontSize(11);
-    doc.setTextColor(26, 31, 44);
-    doc.text(`${sensor}: ${state}`, 30, y);
-    y += 10;
+    // Draw status with color
+    const statusColor = getStatusColor(item.status);
+    const statusIcon = STATUS_ICONS[item.status as keyof typeof STATUS_ICONS];
+    
+    doc.setFillColor(...statusColor);
+    doc.roundedRect(140, y - 5, 45, 10, 2, 2, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${statusIcon} ${item.status}`, 143, y);
+    doc.setTextColor(60, 60, 60);
   });
   
-  // Starting Circuit
-  doc.addPage();
-  doc.setFontSize(14);
-  doc.setTextColor(139, 92, 246);
-  doc.text("Circuit de Démarrage", 20, 20);
-  
-  y = 40;
-  Object.entries(data.startingCircuit).forEach(([item, state]) => {
-    const statusColor = getStatusColor(state);
-    doc.setFillColor(...statusColor);
-    doc.circle(25, y - 1, 2, 'F');
+  // Observations section
+  if (data.observations) {
+    const observationsY = componentStartY + 10 + (componentItems.length * 12) + 20;
     
-    doc.setFontSize(11);
-    doc.setTextColor(26, 31, 44);
-    doc.text(`${item}: ${state}`, 30, y);
-    y += 10;
-  });
-  
-  // Wiring
-  doc.setFontSize(14);
-  doc.setTextColor(139, 92, 246);
-  doc.text("Branchement et Câblage", 20, y + 20);
-  
-  y += 40;
-  Object.entries(data.wiring).forEach(([item, state]) => {
-    const statusColor = getStatusColor(state);
-    doc.setFillColor(...statusColor);
-    doc.circle(25, y - 1, 2, 'F');
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(88, 86, 214);
+    doc.text("Observations", 20, observationsY);
     
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
-    doc.setTextColor(26, 31, 44);
-    doc.text(`${item}: ${state}`, 30, y);
-    y += 10;
-  });
+    doc.setTextColor(60, 60, 60);
+    
+    // Draw text box for observations
+    doc.setFillColor(250, 250, 250);
+    doc.setDrawColor(230, 230, 230);
+    doc.roundedRect(20, observationsY + 5, 170, 40, 2, 2, 'FD');
+    
+    // Add observation text with word wrapping
+    const textLines = doc.splitTextToSize(data.observations, 160);
+    doc.text(textLines, 25, observationsY + 15);
+  }
+  
+  // Photos section
+  if (data.photos.length > 0) {
+    let photosY = data.observations 
+      ? componentStartY + 10 + (componentItems.length * 12) + 80
+      : componentStartY + 10 + (componentItems.length * 12) + 20;
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(88, 86, 214);
+    doc.text("Photos", 20, photosY);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`(${data.photos.length} photo${data.photos.length > 1 ? 's' : ''})`, 60, photosY);
+    
+    // In a real application, you would add the actual photos here
+    // Since we're using placeholders, we'll just show icons
+    
+    doc.setFillColor(240, 240, 240);
+    data.photos.forEach((_, index) => {
+      const x = 20 + ((index % 3) * 60);
+      const y = photosY + 10 + (Math.floor(index / 3) * 45);
+      
+      doc.roundedRect(x, y, 50, 35, 2, 2, 'F');
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Photo ${index + 1}`, x + 25, y + 20, { align: "center" });
+    });
+  }
   
   // Save the PDF
-  doc.save(`checklist_${data.engineModel}_${format(new Date(data.date), "dd-MM-yyyy")}.pdf`);
+  doc.save(`inspection_${data.serialNumber}_${format(new Date(data.date), "dd-MM-yyyy")}.pdf`);
 };
